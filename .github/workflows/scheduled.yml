@@ -1,0 +1,65 @@
+name: Scheduled Analysis
+
+on:
+  schedule:
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  daily-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd ai-service
+        pip install -r requirements.txt
+    
+    - name: Run daily stock analysis
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+      run: |
+        cd ai-service
+        python -c "
+        import requests
+        import json
+        
+        stocks = ['600519', '000858', '000001', '600036', '601318']
+        results = []
+        
+        for code in stocks:
+            try:
+                response = requests.get(f'http://localhost:8000/api/analyze/stock/{code}', timeout=60)
+                if response.status_code == 200:
+                    results.append(response.json())
+            except Exception as e:
+                print(f'Error analyzing {code}: {e}')
+        
+        print(f'Analyzed {len(results)} stocks')
+        "
+    
+    - name: Send email notification
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.qq.com
+        server_port: 587
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Daily Stock Analysis Report
+        to: ${{ secrets.RECEIVER_EMAIL }}
+        from: Stock AI Assistant
+        body: |
+          Daily stock analysis completed.
+          
+          Please check the analysis results in your dashboard.
+          
+          Best regards,
+          Stock AI Assistant

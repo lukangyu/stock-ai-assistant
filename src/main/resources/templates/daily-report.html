@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0 0; opacity: 0.9; }
+        .content { padding: 20px; }
+        .section { margin-bottom: 25px; }
+        .section-title { font-size: 18px; color: #333; border-left: 4px solid #667eea; padding-left: 10px; margin-bottom: 15px; }
+        .market-summary { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        .stock-card { border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 10px; }
+        .stock-card.recommended { border-color: #4caf50; background: #f1f8e9; }
+        .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .stock-name { font-weight: bold; font-size: 16px; }
+        .stock-code { color: #666; font-size: 14px; }
+        .recommendation { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .rec-buy { background: #e8f5e9; color: #2e7d32; }
+        .rec-sell { background: #ffebee; color: #c62828; }
+        .rec-hold { background: #fff3e0; color: #ef6c00; }
+        .stock-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .detail-item { text-align: center; }
+        .detail-label { font-size: 12px; color: #666; }
+        .detail-value { font-size: 14px; font-weight: bold; }
+        .detail-value.up { color: #c62828; }
+        .detail-value.down { color: #2e7d32; }
+        .news-item { padding: 10px; border-bottom: 1px solid #eee; }
+        .news-item:last-child { border-bottom: none; }
+        .news-title { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .news-meta { font-size: 12px; color: #666; }
+        .sentiment { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+        .sentiment-positive { background: #e8f5e9; color: #2e7d32; }
+        .sentiment-negative { background: #ffebee; color: #c62828; }
+        .sentiment-neutral { background: #f5f5f5; color: #666; }
+        .footer { text-align: center; padding: 15px; color: #666; font-size: 12px; border-top: 1px solid #eee; }
+        .alert-item { padding: 10px; background: #fff3e0; border-left: 4px solid #ff9800; margin-bottom: 8px; border-radius: 0 4px 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 每日股票分析报告</h1>
+            <p th:text="${report.date}">2024-01-15</p>
+        </div>
+        
+        <div class="content">
+            <div class="section" th:if="${report.marketSummary != null}">
+                <h2 class="section-title">📈 市场概况</h2>
+                <div class="market-summary" th:text="${report.marketSummary}">
+                    今日A股市场整体表现...
+                </div>
+            </div>
+            
+            <div class="section" th:if="${report.recommendedStocks != null and !report.recommendedStocks.isEmpty()}">
+                <h2 class="section-title">🎯 AI推荐股票</h2>
+                <div th:each="stock : ${report.recommendedStocks}">
+                    <div class="stock-card recommended">
+                        <div class="stock-header">
+                            <div>
+                                <span class="stock-name" th:text="${stock.name}">贵州茅台</span>
+                                <span class="stock-code" th:text="${stock.code}">600519</span>
+                            </div>
+                            <span class="recommendation" 
+                                  th:classappend="${stock.recommendation == 'BUY'} ? 'rec-buy' : (${stock.recommendation == 'SELL'} ? 'rec-sell' : 'rec-hold')"
+                                  th:text="${stock.recommendation == 'BUY'} ? '买入' : (${stock.recommendation == 'SELL'} ? '卖出' : '持有')">
+                                买入
+                            </span>
+                        </div>
+                        <div class="stock-details">
+                            <div class="detail-item">
+                                <div class="detail-label">当前价格</div>
+                                <div class="detail-value" th:text="${stock.currentPrice}">1850.00</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">置信度</div>
+                                <div class="detail-value" th:text="${#numbers.formatDecimal(stock.confidence * 100, 1, 1)} + '%'">85.5%</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">风险等级</div>
+                                <div class="detail-value" th:text="${stock.riskLevel}">中等</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;" th:if="${stock.reasons != null}">
+                            <strong>分析理由：</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                <li th:each="reason : ${stock.reasons}" th:text="${reason}">技术面走强</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" th:if="${report.hotNews != null and !report.hotNews.isEmpty()}">
+                <h2 class="section-title">📰 热门财经新闻</h2>
+                <div th:each="news : ${report.hotNews}">
+                    <div class="news-item">
+                        <div class="news-title" th:text="${news.title}">央行宣布降准0.5个百分点</div>
+                        <div class="news-meta">
+                            <span th:text="${news.source}">财经网</span> | 
+                            <span th:text="${news.sentiment}">正面</span>
+                            <span class="sentiment" 
+                                  th:classappend="${news.sentiment == '正面'} ? 'sentiment-positive' : (${news.sentiment == '负面'} ? 'sentiment-negative' : 'sentiment-neutral')"
+                                  th:text="${news.sentiment}">
+                                正面
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" th:if="${report.watchListAlerts != null and !report.watchListAlerts.isEmpty()}">
+                <h2 class="section-title">⚠️ 自选股预警</h2>
+                <div th:each="alert : ${report.watchListAlerts}">
+                    <div class="alert-item" th:text="${alert}">
+                        贵州茅台(600519) 突破20日均线
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>发送时间：<span th:text="${sendTime}">2024-01-15 18:00:00</span></p>
+            <p>本报告仅供参考，不构成投资建议。投资有风险，入市需谨慎。</p>
+        </div>
+    </div>
+</body>
+</html>

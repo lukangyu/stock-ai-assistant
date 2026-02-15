@@ -1,0 +1,12 @@
+.env
+*.log
+logs/
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.idea/
+.vscode/
+target/
+!.gitkeep

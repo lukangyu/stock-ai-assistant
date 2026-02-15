@@ -1,5 +1,9 @@
 # 📈 Stock AI Assistant - 个人股票分析AI助手
 
+[![CI](https://github.com/lukangyu/stock-ai-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/lukangyu/stock-ai-assistant/actions/workflows/ci.yml)
+[![Deploy](https://github.com/lukangyu/stock-ai-assistant/actions/workflows/deploy.yml/badge.svg)](https://github.com/lukangyu/stock-ai-assistant/actions/workflows/deploy.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 一款基于 AI 的个人股票分析助手，专为 A 股市场设计，提供智能分析、投资建议和邮件推送功能。
 
 ## 📋 目录
